@@ -1,0 +1,27 @@
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+df = pd.read_csv('observed-timeseries-of-a ().csv')
+
+X = df[['Category']]
+y = df['Average Mean Surface Air Temperature (Annual Mean °C)']
+
+model = LinearRegression()
+model.fit(X, y)
+
+future_years = np.array(range(2025, 2051)).reshape(-1, 1)
+predictions = model.predict(future_years)
+
+prediction_df = pd.DataFrame({
+    'Year': future_years.flatten(),
+    'Predicted Temp (°C)': np.round(predictions, 2)
+})
+
+residuals = y - model.predict(X)
+std_dev = np.std(residuals)
+
+prediction_df['Lower Bound (95%)'] = np.round(prediction_df['Predicted Temp (°C)'] - 1.96 * std_dev, 2)
+prediction_df['Upper Bound (95%)'] = np.round(prediction_df['Predicted Temp (°C)'] + 1.96 * std_dev, 2)
+
+print(prediction_df.to_markdown(index=False))
